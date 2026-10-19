@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ujian DASS-21 | Depresi, Kebimbangan dan Tekanan</title>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+--bg:#eaf1f2;--card:#fff;--ink:#14303a;--mute:#536b73;--line:#cfdde0;--acc:#1d6f80;--acc-ink:#fff;--track:#dbe7e9;
+--c0:#2f8f6b;--c1:#7a9a2e;--c2:#d28a1c;--c3:#d0562f;--c4:#a8263f}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;--bg:#0f1f24;--card:#172b32;--ink:#e6f0f2;--mute:#9db5bb;--line:#2a444c;--acc:#5ec0d3;--acc-ink:#0b1a1f;--track:#25414a;--c0:#4cc394;--c1:#a6c85a;--c2:#f0b049;--c3:#f08358;--c4:#f0728a}}
+:root[data-theme="dark"]{color-scheme:dark;--bg:#0f1f24;--card:#172b32;--ink:#e6f0f2;--mute:#9db5bb;--line:#2a444c;--acc:#5ec0d3;--acc-ink:#0b1a1f;--track:#25414a;--c0:#4cc394;--c1:#a6c85a;--c2:#f0b049;--c3:#f08358;--c4:#f0728a}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:18px/1.55 "Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",sans-serif}
+main{max-width:640px;margin:0 auto;padding:20px 16px 40px}
+h1{font-size:1.9rem;line-height:1.2;margin:.2em 0 .4em}
+h2{font-size:1.25rem;margin:0 0 .4em}
+p{margin:.5em 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px}
+.mute{color:var(--mute);font-size:.95rem}
+button{font:inherit;cursor:pointer}
+button:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+.btn{background:var(--acc);color:var(--acc-ink);border:0;border-radius:10px;padding:12px 22px;font-weight:700}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+.row{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+.prog{height:8px;background:var(--track);border-radius:8px;overflow:hidden;margin:6px 0 20px}
+.prog i{display:block;height:100%;background:var(--acc);transition:width .25s}
+.q{font-size:1.3rem;line-height:1.4;margin:0 0 18px;min-height:3.8em}
+.opt{display:block;width:100%;text-align:left;background:var(--card);color:var(--ink);border:1.5px solid var(--line);border-radius:10px;padding:13px 15px;margin:0 0 9px;transition:border-color .15s,background .15s}
+.opt:hover{border-color:var(--acc)}
+.opt[aria-pressed="true"]{border-color:var(--acc);background:var(--track);font-weight:700}
+.opt b{display:inline-block;min-width:1.6em;color:var(--acc)}
+.res{margin:0 0 20px}
+.res .top{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.bar{height:14px;background:var(--track);border-radius:8px;overflow:hidden;margin:6px 0}
+.bar i{display:block;height:100%;border-radius:8px;transition:width .6s}
+.tag{font-weight:700}
+.help{border-left:5px solid var(--c3);padding:12px 16px;margin-top:18px;background:var(--track);border-radius:0 10px 10px 0}
+table{border-collapse:collapse;width:100%;font-size:.9rem}
+th,td{padding:6px 8px;border-bottom:1px solid var(--line);text-align:left}
+.scroll{overflow-x:auto}
+.hide{display:none}
+@media print{.noprint{display:none}body{background:#fff;color:#000}}
+</style>
+</head>
+<body>
+<main>
+<section id="intro" class="card">
+<h1>Ujian DASS-21</h1>
+<p>Ujian saringan ini mengukur tahap <b>depresi</b>, <b>kebimbangan</b> dan <b>tekanan</b> anda sepanjang <b>7 hari yang lepas</b>. Ia mempunyai 21 soalan dan mengambil masa kira-kira 5 minit.</p>
+<p class="mute">Jawapan anda tidak disimpan atau dihantar ke mana-mana. Keputusan hanya dipaparkan pada skrin anda. Ujian ini ialah alat saringan, bukan diagnosis.</p>
+<p>Pilih jawapan yang paling menggambarkan diri anda. Tiada jawapan betul atau salah.</p>
+<div class="row"><button class="btn" id="start">Mulakan ujian</button></div>
+</section>
+
+<section id="quiz" class="card hide" aria-live="polite">
+<div class="mute" id="count"></div>
+<div class="prog"><i id="pbar"></i></div>
+<p class="q" id="qtext"></p>
+<div id="opts"></div>
+<div class="row"><button class="btn ghost" id="back">Soalan sebelum</button></div>
+</section>
+
+<section id="result" class="hide">
+<div class="card">
+<h1>Keputusan anda</h1>
+<p class="mute">Skor dikira berdasarkan jawapan anda (setiap skala ditolak 42 mata). Ini ialah saringan sahaja.</p>
+<div id="bars" style="margin-top:18px"></div>
+<div id="alert"></div>
+<div class="row noprint">
+<button class="btn" id="print">Cetak keputusan</button>
+<button class="btn ghost" id="again">Ambil semula</button>
+</div>
+</div>
+<div class="card" style="margin-top:16px">
+<h2>Jadual tahap keterukan</h2>
+<div class="scroll"><table>
+<tr><th>Tahap</th><th>Depresi</th><th>Kebimbangan</th><th>Tekanan</th></tr>
+<tr><td>Normal</td><td>0–9</td><td>0–7</td><td>0–14</td></tr>
+<tr><td>Ringan</td><td>10–13</td><td>8–9</td><td>15–18</td></tr>
+<tr><td>Sederhana</td><td>14–20</td><td>10–14</td><td>19–25</td></tr>
+<tr><td>Teruk</td><td>21–27</td><td>15–19</td><td>26–33</td></tr>
+<tr><td>Sangat teruk</td><td>28+</td><td>20+</td><td>34+</td></tr>
+</table></div>
+</div>
+</section>
+</main>
+<script>
+var Q=[
+["S","Saya rasa sukar untuk bertenang."],
+["A","Saya sedar mulut saya terasa kering."],
+["D","Saya langsung tidak dapat merasai perasaan positif."],
+["A","Saya mengalami kesukaran bernafas (contohnya nafas cepat atau tercungap-cungap walaupun tidak melakukan aktiviti fizikal)."],
+["D","Saya rasa sukar untuk memulakan sesuatu kerja."],
+["S","Saya cenderung bertindak balas secara keterlaluan terhadap sesuatu keadaan."],
+["A","Saya mengalami gementar (contohnya pada tangan)."],
+["S","Saya rasa banyak tenaga saya digunakan untuk gelisah."],
+["A","Saya bimbang tentang keadaan yang mungkin membuat saya panik dan nampak bodoh."],
+["D","Saya rasa tiada apa yang dinanti-nantikan."],
+["S","Saya mendapati diri saya mudah resah."],
+["S","Saya rasa sukar untuk berehat."],
+["D","Saya berasa murung dan sedih."],
+["S","Saya tidak boleh bersabar dengan apa-apa yang menghalang saya meneruskan sesuatu."],
+["A","Saya rasa hampir panik."],
+["D","Saya tidak dapat berasa bersemangat terhadap apa-apa pun."],
+["D","Saya rasa diri saya tidak bernilai sebagai seorang manusia."],
+["S","Saya rasa diri saya agak mudah tersinggung."],
+["A","Saya sedar degupan jantung saya walaupun tidak melakukan aktiviti fizikal (contohnya jantung berdegup laju atau terlepas denyutan)."],
+["A","Saya berasa takut tanpa sebab yang munasabah."],
+["D","Saya rasa hidup ini tidak bermakna."]
+];
+var O=["Tidak langsung menggambarkan saya","Sedikit atau kadang-kadang menggambarkan saya","Banyak atau kerap menggambarkan saya","Sangat banyak atau hampir sentiasa menggambarkan saya"];
+var CUT={D:[9,13,20,27],A:[7,9,14,19],S:[14,18,25,33]};
+var NAMA={D:"Depresi",A:"Kebimbangan",S:"Tekanan"};
+var LVL=["Normal","Ringan","Sederhana","Teruk","Sangat teruk"];
+var COL=["var(--c0)","var(--c1)","var(--c2)","var(--c3)","var(--c4)"];
+var ans=[],i=0;
+function $(id){return document.getElementById(id)}
+function show(id){["intro","quiz","result"].forEach(function(s){$(s).classList.toggle("hide",s!==id)});window.scrollTo(0,0)}
+function render(){
+  $("count").textContent="Soalan "+(i+1)+" daripada 21";
+  $("pbar").style.width=(i/21*100)+"%";
+  $("qtext").textContent=Q[i][1];
+  var h=$("opts");h.innerHTML="";
+  O.forEach(function(t,v){
+    var b=document.createElement("button");b.className="opt";
+    b.setAttribute("aria-pressed",ans[i]===v?"true":"false");
+    var n=document.createElement("b");n.textContent=v;b.appendChild(n);b.appendChild(document.createTextNode(" "+t));
+    b.onclick=function(){ans[i]=v;if(i<20){i++;render()}else{finish()}};
+    h.appendChild(b);
+  });
+  $("back").style.visibility=i===0?"hidden":"visible";
+}
+function level(k,s){var c=CUT[k],l=0;while(l<4&&s>c[l])l++;return l}
+function finish(){
+  var sc={D:0,A:0,S:0};
+  Q.forEach(function(q,x){sc[q[0]]+=ans[x]});
+  var box=$("bars");box.innerHTML="";var worst=0;
+  ["D","A","S"].forEach(function(k){
+    var s=sc[k]*2,l=level(k,s);worst=Math.max(worst,l);
+    var d=document.createElement("div");d.className="res";
+    d.innerHTML='<div class="top"><h2>'+NAMA[k]+'</h2><span><b>'+s+'</b> / 42 &nbsp;<span class="tag" style="color:'+COL[l]+'">'+LVL[l]+'</span></span></div><div class="bar" role="img" aria-label="'+NAMA[k]+' '+s+' daripada 42, '+LVL[l]+'"><i style="width:0;background:'+COL[l]+'"></i></div>';
+    box.appendChild(d);
+    setTimeout(function(){d.querySelector("i").style.width=(s/42*100)+"%"},50);
+  });
+  var a=$("alert");a.innerHTML="";
+  if(worst>=2||ans[20]>=2||ans[16]>=2){
+    a.innerHTML='<div class="help"><b>Anda tidak perlu menghadapinya sendirian.</b><p>Sila berhubung dengan kaunselor, doktor atau orang yang anda percayai. Jika anda rasa ingin mencederakan diri atau tidak mahu hidup lagi, hubungi segera:</p><p>Talian Kasih: <b>15999</b><br>Talian HEAL (KKM): <b>15555</b><br>Befrienders KL: <b>03-7627 2929</b></p></div>';
+  }else{
+    a.innerHTML='<p class="mute" style="margin-top:12px">Skor anda berada dalam julat yang rendah. Teruskan menjaga tidur, makan dan rutin harian, dan bercakap dengan seseorang jika perasaan anda berubah.</p>';
+  }
+  $("pbar").style.width="100%";
+  show("result");
+}
+$("start").onclick=function(){ans=[];i=0;show("quiz");render()};
+$("back").onclick=function(){if(i>0){i--;render()}};
+$("again").onclick=function(){ans=[];i=0;show("intro")};
+$("print").onclick=function(){try{window.print()}catch(e){}};
+</script>
+</body>
+</html>
